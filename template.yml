@@ -1,0 +1,70 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+
+Globals:
+  Function:
+    Environment:
+      Variables:
+        CLIENT_ID: XXXX
+        CLIENT_SECRET: XXXX
+        OWNER_ID: XXXX
+        AUTH_REDIRECT_URL: XXXX
+        BUCKET: !Ref Bucket
+        USERS_TBL: !Ref UsersTable
+    Runtime: go1.x
+    Timeout: 300
+    Handler: main
+
+Resources:
+  UsersTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: Users
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+
+  Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub ${AWS::StackName}
+
+  FetchExtAnalytics:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      CodeUri: ./dist/fetch-extension-analytics/
+      Events:
+        Timer:
+          Type: Schedule
+          Properties:
+            Schedule: cron(0 2 * * ? *)
+      Policies:
+        - S3CrudPolicy:
+            BucketName: !Ref Bucket
+        - DynamoDBCrudPolicy:
+            TableName: !Ref UsersTable
+      Tags:
+        FuncNameTag: !Sub ${AWS::StackName}-Twitch-Fetch-Ext-Analytics
+      FunctionName: !Sub ${AWS::StackName}-Twitch-Fetch-Ext-Analytics
+
+  FetchGameAnalytics:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      CodeUri: ./dist/fetch-game-analytics/
+      Events:
+        Timer:
+          Type: Schedule
+          Properties:
+            Schedule: cron(30 2 * * ? *)
+      Policies:
+        - S3CrudPolicy:
+            BucketName: !Ref Bucket
+        - DynamoDBCrudPolicy:
+            TableName: !Ref UsersTable
+      Tags:
+        FuncNameTag: !Sub ${AWS::StackName}-Twitch-Fetch-Game-Analytics
+      FunctionName: !Sub ${AWS::StackName}-Twitch-Fetch-Game-Analytics
