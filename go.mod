@@ -3,7 +3,7 @@ module github.com/jackmcguire1/go-twitch-analytics
 go 1.12
 
 require (
-	github.com/aws/aws-lambda-go v1.23.0
+	github.com/aws/aws-lambda-go v1.28.0
 	github.com/aws/aws-sdk-go v1.38.38
 	github.com/kr/pretty v0.1.0 // indirect
 	github.com/nicklaw5/helix v0.5.1
